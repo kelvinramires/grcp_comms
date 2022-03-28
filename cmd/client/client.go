@@ -6,6 +6,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"io"
 	"log"
 )
 
@@ -19,8 +20,8 @@ func main() {
 	defer connection.Close()
 
 	client := pb.NewUserServiceClient(connection)
-	AddUser(client)
-
+	//AddUser(client)
+	AddUserStream(client)
 }
 
 func AddUser(client pb.UserServiceClient) {
@@ -35,4 +36,27 @@ func AddUser(client pb.UserServiceClient) {
 	}
 
 	fmt.Println(res)
+}
+
+func AddUserStream(client pb.UserServiceClient) {
+	req := &pb.User{
+		Name:  "Valter Teste",
+		Email: "valter@teste.com",
+	}
+
+	responseStream, err := client.AddUserStream(context.Background(), req)
+	if err != nil {
+		log.Fatalf("Could not add user: %v", err)
+	}
+
+	for {
+		stream, err := responseStream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("Could not add receive stream: %v", err)
+		}
+		fmt.Println("Status:", stream.Status, " - ", stream.GetUser())
+	}
 }
