@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
 	"log"
+	"time"
 )
 
 func main() {
@@ -21,7 +22,8 @@ func main() {
 
 	client := pb.NewUserServiceClient(connection)
 	//AddUser(client)
-	AddUserStream(client)
+	//AddUserStream(client)
+	AddUsers(client)
 }
 
 func AddUser(client pb.UserServiceClient) {
@@ -59,4 +61,51 @@ func AddUserStream(client pb.UserServiceClient) {
 		}
 		fmt.Println("Status:", stream.Status, " - ", stream.GetUser())
 	}
+}
+
+func AddUsers(client pb.UserServiceClient) {
+	reqs := []*pb.User{
+		&pb.User{
+			Id:    "01",
+			Name:  "Kelvin",
+			Email: "kelvinramires@teste.com",
+		},
+		&pb.User{
+			Id:    "02",
+			Name:  "Alissar",
+			Email: "alissar@teste.com",
+		}, &pb.User{
+			Id:    "03",
+			Name:  "Sopa",
+			Email: "sopa@teste.com",
+		}, &pb.User{
+			Id:    "04",
+			Name:  "Papi",
+			Email: "papi@teste.com",
+		}, &pb.User{
+			Id:    "05",
+			Name:  "Vanilla",
+			Email: "vanilla@teste.com",
+		},
+	}
+	stream, err := client.AddUsers(context.Background())
+
+	if err != nil {
+		log.Fatalf("Error Creating Request %v", err)
+	}
+
+	for _, req := range reqs {
+		err := stream.Send(req)
+		if err != nil {
+			return
+		}
+		time.Sleep(time.Second * 3)
+	}
+
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("Error Receiving Response %v", err)
+	}
+
+	fmt.Println(res)
 }
