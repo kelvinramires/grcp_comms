@@ -5,6 +5,7 @@ In `client.go`:
 - The method `AddUser` refers to a simple request usage;
 - The method `AddUserStream` refers to a server stream request;
 - The method `AddUsers` refers to a client stream request;
+- The method `AddUserBiStream` refers to a bidirectional stream request;
 
 ### Generate Proto
 ```shell
